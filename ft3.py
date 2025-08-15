@@ -7,7 +7,6 @@ Qwen-0.6B 文本分类微调 | 终极修复版
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["BITSANDBYTES_NOWELCOME"] = "1"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # =======================
 # 🛡️ 强制屏蔽 bitsandbytes（避免 CUDA 错误）
@@ -72,7 +71,6 @@ model = AutoModelForSequenceClassification.from_pretrained(
     model_path,
     num_labels=2,  # 二分类：positive vs negative/neutral
     torch_dtype=torch.bfloat16,     # 修改为 BF16
-    device_map="auto",              # 自动分配
     trust_remote_code=True
 )
 
