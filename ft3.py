@@ -183,6 +183,8 @@ training_args = TrainingArguments(
 # =======================
 # 7. 初始化 Trainer
 # =======================
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+
 trainer = Trainer(
     model=model,
     args=training_args,
