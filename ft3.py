@@ -164,8 +164,8 @@ data_collator = DataCollatorWithPadding(tokenizer)
 # =======================
 training_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=2,              # 8GB 显存安全值
-    gradient_accumulation_steps=8,              # 等效 batch = 16
+    per_device_train_batch_size=32,              # 8GB 显存安全值
+    gradient_accumulation_steps=4,              # 等效 batch = 16
     learning_rate=2e-5,
     lr_scheduler_type="cosine",
     warmup_ratio=0.1,
