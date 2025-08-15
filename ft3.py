@@ -1,7 +1,6 @@
 # finetune_qwen_0_6b_final.py
 """
 Qwen-0.6B 文本分类微调 | 终极修复版
-✅ 适配：RTX 4060 8GB 显存
 ✅ 解决：LoRA 无梯度、FP16 缩放错误、pad_token 问题
 """
 
@@ -47,8 +46,8 @@ from datasets import load_dataset
 # =======================
 # 1. 路径配置
 # =======================
-model_path = r"D:\杂七杂八项目合集\LLM_Classification_Finetuning\the_model"
-data_path = r"D:\杂七杂八项目合集\LLM_Classification_Finetuning\train_processed.parquet"
+model_path = "../Qwen3-0.6B"
+data_path = "train_processed.parquet"
 output_dir = "./qwen-0.6b-prompt-sentiment-lora"
 
 # =======================
@@ -176,7 +175,7 @@ training_args = TrainingArguments(
     save_steps=100,
     save_total_limit=2,
     fp16=False,                                 # ❌ 关闭 fp16 梯度缩放问题
-    bf16=False,                                 # RTX 4060 对 bf16 支持一般
+    bf16=False,                                 
     # 使用纯 FP32 + LoRA 训练（更稳定）
     remove_unused_columns=False,
     report_to="none",
