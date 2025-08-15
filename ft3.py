@@ -175,7 +175,7 @@ print("⚙️ 配置训练参数...")
 training_args = TrainingArguments(
     output_dir=output_dir,
     num_train_epochs=3,
-    per_device_train_batch_size=16,  # 如果内存不足，请减小此值
+    per_device_train_batch_size=128,  # 如果内存不足，请减小此值
     gradient_accumulation_steps=4,   # 等效 batch_size = 64
     learning_rate=2e-5,
     lr_scheduler_type="cosine",
