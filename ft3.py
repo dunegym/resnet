@@ -71,7 +71,7 @@ print("🔄 加载模型...")
 model = AutoModelForSequenceClassification.from_pretrained(
     model_path,
     num_labels=2,  # 二分类：positive vs negative/neutral
-    torch_dtype=torch.float16,      # 显存优化
+    torch_dtype=torch.float32,      # 修改为 FP32
     device_map="auto",              # 自动分配
     trust_remote_code=True
 )
@@ -171,7 +171,7 @@ print("⚙️ 配置训练参数...")
 training_args = TrainingArguments(
     output_dir=output_dir,
     num_train_epochs=3,
-    per_device_train_batch_size=16,  # 根据显存调整
+    per_device_train_batch_size=64,  # 根据显存调整
     gradient_accumulation_steps=4,   # 等效 batch_size = 64
     learning_rate=2e-5,
     lr_scheduler_type="cosine",
@@ -180,11 +180,14 @@ training_args = TrainingArguments(
     save_strategy="epoch",
     save_total_limit=1,
     
-    # --- 关键修改：启用 FP16 并开启梯度缩放 ---
-    fp16=True,                       # 启用混合精度训练
+    # --- 关键修改：禁用 FP16 ---
+    fp16=False,                      # 使用 FP32 训练
     # -----------------------------------------
 
     gradient_checkpointing=True,     # 节省显存
+    # --- 关键修复：确保梯度检查点兼容性 ---
+    gradient_checkpointing_kwargs={'use_cache': False},
+    # -----------------------------------------
     disable_tqdm=False,
     report_to="none",
     remove_unused_columns=False,     # 避免删除 'label'
