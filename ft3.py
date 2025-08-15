@@ -65,7 +65,7 @@ tokenizer.padding_side = "right"  # 推荐
 print(f"✅ pad_token: {tokenizer.pad_token} (id={tokenizer.pad_token_id})")
 
 # =======================
-# 3. 加载模型（FP16 + GPU）
+# 3. 加载模型
 # =======================
 print("🔄 加载模型...")
 model = AutoModelForSequenceClassification.from_pretrained(
@@ -75,6 +75,10 @@ model = AutoModelForSequenceClassification.from_pretrained(
     device_map="auto",              # 自动分配
     trust_remote_code=True
 )
+
+# --- 关键修复：在模型配置中禁用 use_cache ---
+model.config.use_cache = False
+# -----------------------------------------
 
 # ✅ 关键：设置 model.config.pad_token_id
 if model.config.pad_token_id is None:
@@ -171,7 +175,7 @@ print("⚙️ 配置训练参数...")
 training_args = TrainingArguments(
     output_dir=output_dir,
     num_train_epochs=3,
-    per_device_train_batch_size=64,  # 根据显存调整
+    per_device_train_batch_size=16,  # 如果内存不足，请减小此值
     gradient_accumulation_steps=4,   # 等效 batch_size = 64
     learning_rate=2e-5,
     lr_scheduler_type="cosine",
@@ -185,9 +189,9 @@ training_args = TrainingArguments(
     # -----------------------------------------
 
     gradient_checkpointing=True,     # 节省显存
-    # --- 关键修复：确保梯度检查点兼容性 ---
-    gradient_checkpointing_kwargs={'use_cache': False},
-    # -----------------------------------------
+    # --- 移除此行，因为它已被 model.config.use_cache = False 替代 ---
+    # gradient_checkpointing_kwargs={'use_cache': False},
+    # -------------------------------------------------------------
     disable_tqdm=False,
     report_to="none",
     remove_unused_columns=False,     # 避免删除 'label'
