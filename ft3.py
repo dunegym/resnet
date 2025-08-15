@@ -96,6 +96,16 @@ lora_config = LoraConfig(
 
 print("🔧 添加 LoRA 适配器...")
 model = get_peft_model(model, lora_config)
+
+# --- 关键修复 ---
+# 修复 gradient_checkpointing 和 LoRA 的兼容性问题
+if hasattr(model, "enable_input_require_grads"):
+    model.enable_input_require_grads()
+else:
+    def make_inputs_require_grad(module, input, output):
+        output.requires_grad_(True)
+    model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
+
 model.print_trainable_parameters()
 
 # ✅ 强制启用 score 层梯度（关键！）
