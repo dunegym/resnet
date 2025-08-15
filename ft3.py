@@ -155,40 +155,33 @@ dataset = dataset.map(
 dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
 # =======================
-# 6. 数据整理器
+# 6. 训练参数
 # =======================
-data_collator = DataCollatorWithPadding(tokenizer)
-
-# =======================
-# 7. 训练参数（适配 4060）
-# =======================
+print("⚙️ 配置训练参数...")
 training_args = TrainingArguments(
     output_dir=output_dir,
-    per_device_train_batch_size=32,              # 8GB 显存安全值
-    gradient_accumulation_steps=4,              # 等效 batch = 16
+    num_train_epochs=3,
+    per_device_train_batch_size=16,  # 根据显存调整
+    gradient_accumulation_steps=4,   # 等效 batch_size = 64
     learning_rate=2e-5,
     lr_scheduler_type="cosine",
     warmup_ratio=0.1,
-    num_train_epochs=3,
-    weight_decay=0.01,
     logging_steps=10,
-    save_steps=100,
-    save_total_limit=2,
-    fp16=False,                                 # ❌ 关闭 fp16 梯度缩放问题
-    bf16=False,                                 
-    # 使用纯 FP32 + LoRA 训练（更稳定）
-    remove_unused_columns=False,
+    save_strategy="epoch",
+    save_total_limit=1,
+    
+    # --- 关键修改：启用 FP16 并开启梯度缩放 ---
+    fp16=True,                       # 启用混合精度训练
+    # -----------------------------------------
+
+    gradient_checkpointing=True,     # 节省显存
+    disable_tqdm=False,
     report_to="none",
-    max_grad_norm=1.0,
-    seed=3407,
-    eval_strategy="no",
-    gradient_checkpointing=True,                # 显存换时间
-    # 禁用 scaler
-    skip_memory_metrics=True,
+    remove_unused_columns=False,     # 避免删除 'label'
 )
 
 # =======================
-# 8. 初始化 Trainer
+# 7. 初始化 Trainer
 # =======================
 trainer = Trainer(
     model=model,
