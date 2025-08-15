@@ -71,7 +71,7 @@ print("🔄 加载模型...")
 model = AutoModelForSequenceClassification.from_pretrained(
     model_path,
     num_labels=2,  # 二分类：positive vs negative/neutral
-    torch_dtype=torch.float32,      # 修改为 FP32
+    torch_dtype=torch.bfloat16,     # 修改为 BF16
     device_map="auto",              # 自动分配
     trust_remote_code=True
 )
@@ -175,8 +175,8 @@ print("⚙️ 配置训练参数...")
 training_args = TrainingArguments(
     output_dir=output_dir,
     num_train_epochs=3,
-    per_device_train_batch_size=128,  # 如果内存不足，请减小此值
-    gradient_accumulation_steps=4,   # 等效 batch_size = 64
+    per_device_train_batch_size=32,  # 如果内存不足，请减小此值
+    gradient_accumulation_steps=4,   
     learning_rate=2e-5,
     lr_scheduler_type="cosine",
     warmup_ratio=0.1,
@@ -184,8 +184,9 @@ training_args = TrainingArguments(
     save_strategy="epoch",
     save_total_limit=1,
     
-    # --- 关键修改：禁用 FP16 ---
-    fp16=False,                      # 使用 FP32 训练
+    # --- 关键修改：启用 BF16 ---
+    # 需要 Ampere 或更新的 GPU (A100, RTX 30xx/40xx)
+    bf16=True,                       # 使用 BF16 训练
     # -----------------------------------------
 
     gradient_checkpointing=True,     # 节省显存
